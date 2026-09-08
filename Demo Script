@@ -1,0 +1,13 @@
+1.root directory: cd .. (make sure both terminals are in root dir)
+
+2.path script: 
+
+Set-Content -Path scripts/monitor.js -Value 'import { JsonRpcProvider } from "ethers"; const provider = new JsonRpcProvider("http://127.0.0.1:7545"); console.log("\n=========================================="); console.log("  Ganache Web3 Event Listener Active...  "); console.log("==========================================\n"); provider.on("block", async (blockNumber) => { const block = await provider.getBlock(blockNumber); console.log(`[EVENT] Block #${blockNumber} Mined | Tx Count: ${block.transactions.length} | Time: ${new Date().toLocaleTimeString()}`); });'
+
+3 Left terminal Interface script: 
+
+node scripts/interactive.js
+
+4 Right terminal script:
+
+node scripts/monitor.js
