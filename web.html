@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CyberScope Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        header {
+            background: #17202a;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin-bottom: 8px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .device-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .device-card h2 {
+            margin-bottom: 20px;
+        }
+
+        .info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .buttons {
+            margin-top: 25px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        .api-button {
+            background: #34495e;
+            color: white;
+        }
+
+        .secure-button {
+            background: #27ae60;
+            color: white;
+        }
+
+        .warning-button {
+            background: #e67e22;
+            color: white;
+        }
+
+        .alert {
+            margin-top: 25px;
+            padding: 18px;
+            border-radius: 8px;
+            background: #fff3cd;
+            border: 1px solid #ffe69c;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        @media (max-width: 700px) {
+            .info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>CyberScope</h1>
+        <p>IoT Device Integrity Monitoring Dashboard</p>
+    </header>
+
+    <div class="container">
+
+        <div class="device-card">
+
+            <h2>Device Information</h2>
+
+            <div class="info">
+
+                <div class="info-box">
+                    <strong>Device Name</strong>
+                    <span id="deviceName">Loading...</span>
+                </div>
+
+                <div class="info-box">
+                    <strong>Device Status</strong>
+                    <span id="deviceStatus">Loading...</span>
+                </div>
+
+                <div class="info-box">
+                    <strong>Integrity Status</strong>
+                    <span id="integrityStatus">Loading...</span>
+                </div>
+
+                <div class="info-box">
+                    <strong>Last Check</strong>
+                    <span id="lastCheck">Loading...</span>
+                </div>
+
+            </div>
+
+            <div class="buttons">
+
+                <button class="api-button" onclick="fetchDeviceData()">
+                    Fetch Device Data
+                </button>
+
+                <button class="secure-button" onclick="setSecureStatus()">
+                    Simulate Secure Status
+                </button>
+
+                <button class="warning-button" onclick="setWarningStatus()">
+                    Simulate Warning Status
+                </button>
+
+            </div>
+
+            <div class="alert">
+                <strong>Security Alert:</strong>
+                <span id="alertMessage">Loading...</span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer>
+        CyberScope Security Monitoring Prototype
+    </footer>
+
+
+    <script>
+
+        // Current CyberScope device information
+        const device = {
+            name: "Raspberry Pi 01",
+            status: "Warning",
+            integrity: "Baseline Mismatch Detected",
+            lastCheck: "Integrity change detected"
+        };
+
+
+        // Update the dashboard using JavaScript DOM manipulation
+        function updateDashboard() {
+
+            document.getElementById("deviceName").textContent =
+                device.name;
+
+            document.getElementById("deviceStatus").textContent =
+                device.status;
+
+            document.getElementById("integrityStatus").textContent =
+                device.integrity;
+
+            document.getElementById("lastCheck").textContent =
+                device.lastCheck;
+
+
+            // Display an appropriate security message
+            if (device.status === "Secure") {
+
+                document.getElementById("alertMessage").textContent =
+                    "System Secure - No integrity changes detected.";
+
+            } else {
+
+                document.getElementById("alertMessage").textContent =
+                    "Security Alert - Integrity mismatch detected. Further investigation recommended.";
+
+            }
+        }
+
+
+        // Simulate receiving device data from an API
+        function fetchDeviceData() {
+
+            // Simulated API response
+            const apiResponse = {
+
+                deviceName: "Raspberry Pi 01",
+
+                status: "Secure",
+
+                integrity: "Baseline Match",
+
+                lastCheck: "No integrity changes detected"
+
+            };
+
+
+            // Process the returned data
+            device.name = apiResponse.deviceName;
+
+            device.status = apiResponse.status;
+
+            device.integrity = apiResponse.integrity;
+
+            device.lastCheck = apiResponse.lastCheck;
+
+
+            // Update the dashboard
+            updateDashboard();
+
+        }
+
+
+        // Secure testing scenario
+        function setSecureStatus() {
+
+            device.status = "Secure";
+
+            device.integrity = "Baseline Match";
+
+            device.lastCheck = "No integrity changes detected";
+
+            updateDashboard();
+
+        }
+
+
+        // Warning testing scenario
+        function setWarningStatus() {
+
+            device.status = "Warning";
+
+            device.integrity = "Baseline Mismatch Detected";
+
+            device.lastCheck = "Integrity change detected";
+
+            updateDashboard();
+
+        }
+
+
+        // Display the initial device information
+        updateDashboard();
+
+    </script>
+
+</body>
+</html>
