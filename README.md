@@ -4,14 +4,15 @@
 2. compile contract
 
 ```bash
-    truffle migrate --reset --network development
+truffle migrate --reset --network development
 ```
 
 3. run node js server
 
 ```bash
-    node server.js
+node server.js
 ```
 
 4. dashboard at ``./web/index.html``
+5. ``./rpi`` includes the files for the Raspberry Pi
 
