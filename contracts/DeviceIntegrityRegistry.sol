@@ -1,71 +1,34 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.0;
 
-/**
- * @title DeviceIntegrityRegistry
- * @dev Stores IoT baseline hashes and logs tamper/anomaly events on-chain.
- */
 contract DeviceIntegrityRegistry {
-    enum DeviceStatus { SECURE, TAMPERED, RESOURCE_ANOMALY, NETWORK_ANOMALY }
+    mapping(address => bytes32) public deviceBaselines;
+    mapping(address => bool) public deviceRegistered;
+    
+    mapping(address => bool) public approvedDevices;
 
-    struct DeviceState {
-        bytes32 baselineHash;
-        bytes32 lastReportedHash;
-        DeviceStatus status;
-        uint256 lastUpdated;
-        uint256 anomalyCount;
-    }
-
-    mapping(string => DeviceState) public devices;
-    address public owner;
-
-    event DeviceRegistered(string indexed deviceId, bytes32 baselineHash);
-    event AnomalyFlagged(string indexed deviceId, DeviceStatus status, string reason, uint256 timestamp);
-    event IntegrityChecked(string indexed deviceId, bool passed, DeviceStatus status);
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can perform this action");
-        _;
-    }
+    event IntegrityCheck(address indexed device, bytes32 indexed deviceHash, bool indexed matched, uint256 deviceData);
+    event DeviceRegistered(address indexed device, bytes32 indexed baselineHash);
 
     constructor() {
-        owner = msg.sender;
+        approvedDevices[0x4873cD7324B6671193412c44A48A5f7dAAa15907] = true;     
+        approvedDevices[0xC8eCB329e2493e00e735BCf3018E63bfa6ed6961] = true;
     }
 
-    function registerDevice(string memory deviceId, bytes32 baselineHash) public onlyOwner {
-        devices[deviceId] = DeviceState({
-            baselineHash: baselineHash,
-            lastReportedHash: baselineHash,
-            status: DeviceStatus.SECURE,
-            lastUpdated: block.timestamp,
-            anomalyCount: 0
-        });
-
-        emit DeviceRegistered(deviceId, baselineHash);
-    }
-
-    function submitStateCheck(
-        string memory deviceId,
-        bytes32 currentHash,
-        uint8 statusCode,
-        string memory reason
-    ) public returns (bool) {
-        DeviceState storage dev = devices[deviceId];
-        require(dev.baselineHash != bytes32(0), "Device not registered");
-
-        dev.lastReportedHash = currentHash;
-        dev.lastUpdated = block.timestamp;
-
-        if (currentHash != dev.baselineHash || statusCode != 0) {
-            dev.status = DeviceStatus(statusCode == 0 ? uint8(DeviceStatus.TAMPERED) : statusCode);
-            dev.anomalyCount += 1;
-            emit AnomalyFlagged(deviceId, dev.status, reason, block.timestamp);
-            emit IntegrityChecked(deviceId, false, dev.status);
-            return false;
+    function submitIntegrityCheck(bytes32 deviceHash, uint256 deviceData) public {
+        require(approvedDevices[msg.sender], "Device not approved");
+    
+        // register the device with this hash as baseline (first transaction)
+        if (!deviceRegistered[msg.sender]) {
+            deviceBaselines[msg.sender] = deviceHash;
+            deviceRegistered[msg.sender] = true;
+            emit DeviceRegistered(msg.sender, deviceHash);
+            emit IntegrityCheck(msg.sender, deviceHash, true, deviceData);
+        } else {
+            // check against stored baseline
+            bool matched = (deviceHash == deviceBaselines[msg.sender]);
+            emit IntegrityCheck(msg.sender, deviceHash, matched, deviceData);
         }
-
-        dev.status = DeviceStatus.SECURE;
-        emit IntegrityChecked(deviceId, true, DeviceStatus.SECURE);
-        return true;
     }
 }
+
