@@ -1,4 +1,17 @@
-# Capstone
-Interactive.js runs the script interface
-Demo script is to be pasted in terminal to show the demo
-DeviceIntegrityRegistry.sol is Solidity source code for smart contract
+# CyperScope
+
+1. add wallet addresses to approved addesses in the contract, creating the Proof of Authority
+2. compile contract
+
+```bash
+    truffle migrate --reset --network development
+```
+
+3. run node js server
+
+```bash
+    node server.js
+```
+
+4. dashboard at ``./web/index.html``
+
