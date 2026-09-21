@@ -7,7 +7,7 @@ contract DeviceIntegrityRegistry {
     
     mapping(address => bool) public approvedDevices;
 
-    event IntegrityCheck(address indexed device, bytes32 indexed deviceHash, bool indexed matched, uint256 deviceData);
+    event IntegrityCheck(address indexed device, bytes32 indexed deviceHash, bool indexed matched, string deviceData);
     event DeviceRegistered(address indexed device, bytes32 indexed baselineHash);
 
     constructor() {
@@ -15,7 +15,7 @@ contract DeviceIntegrityRegistry {
         approvedDevices[0x41264776Cea5369556b86Dc01f26c2D6Ae797B61] = true;
     }
 
-    function submitIntegrityCheck(bytes32 deviceHash, uint256 deviceData) public {
+    function submitIntegrityCheck(bytes32 deviceHash, string memory deviceData) public {
         require(approvedDevices[msg.sender], "Device not approved");
     
         // register the device with this hash as baseline (first transaction)
