@@ -11,10 +11,10 @@ app.use(cors());
 app.use(express.json());
 
 // Blockchain configuration
-const CONTRACT_ADDRESS = "0x06dbca19FF3ecF608bEd5522300a7E60aFEe9565";
+const CONTRACT_ADDRESS = "0x45e171daF44a6dD648a6B7CBF491cA7dE4e5360d";
 const RPC_URL = "HTTP://127.0.0.1:7545";
 const ARTIFACT_PATH = path.join(__dirname, "../build/contracts/DeviceIntegrityRegistry.json");
-const CACHE_DURATION = 30000; // 30 seconds in milliseconds
+const CACHE_DURATION = 10000; // 10 seconds in milliseconds
 
 // State
 let devicesCache = {};

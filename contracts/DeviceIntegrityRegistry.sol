@@ -11,8 +11,8 @@ contract DeviceIntegrityRegistry {
     event DeviceRegistered(address indexed device, bytes32 indexed baselineHash);
 
     constructor() {
-        approvedDevices[0x4873cD7324B6671193412c44A48A5f7dAAa15907] = true;     
-        approvedDevices[0xC8eCB329e2493e00e735BCf3018E63bfa6ed6961] = true;
+        approvedDevices[0xC8277fc891E8d5E10FAB0C0166cD5F8cD890Cab7] = true;
+        approvedDevices[0x41264776Cea5369556b86Dc01f26c2D6Ae797B61] = true;
     }
 
     function submitIntegrityCheck(bytes32 deviceHash, uint256 deviceData) public {

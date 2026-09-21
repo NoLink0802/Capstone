@@ -16,7 +16,7 @@ with open("./build/contracts/DeviceIntegrityRegistry.json") as f:
     artifact = json.load(f)
     CONTRACT_ABI = artifact["abi"]
 
-CONTRACT_ADDRESS = "0x06dbca19FF3ecF608bEd5522300a7E60aFEe9565"
+CONTRACT_ADDRESS = "0x45e171daF44a6dD648a6B7CBF491cA7dE4e5360d"
 contract = w3.eth.contract(address=Web3.to_checksum_address(CONTRACT_ADDRESS), abi=CONTRACT_ABI)
 
 
