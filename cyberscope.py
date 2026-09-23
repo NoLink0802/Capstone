@@ -7,6 +7,8 @@ import psutil
 from gpiozero import DigitalInputDevice
 import board
 import adafruit_dht
+import stat
+import tempfile
 
 # Configuration
 DEVICE_ID = "Raspberry Pi 01"
@@ -18,10 +20,30 @@ light_sensor = DigitalInputDevice(4, pull_up=True, bounce_time=0.3)
 # DHT11 Data Out on GPIO 24 (Physical Pin 18)
 dht_device = adafruit_dht.DHT11(board.D24)
 
+critical_files = [
+    "/etc/passwd",
+    "/etc/resolv.conf", 
+    "/etc/hosts", 
+    "/etc/hostname", 
+    "/etc/security/access.conf", 
+    "/etc/networks"
+]
 
 # tamper flag, once set to true, cannot be changed
 chassis_tampered = False
 
+#File Permissions for critical files
+def get_file_permissions(filepath: str) -> dict:
+    try:
+        st = os.stat(filepath)
+        return {
+            "mode": stat.filemode(st.st_mode),   # e.g. '-rw-r--r--'
+            "octal": oct(st.st_mode & 0o7777),   # e.g. '0o644'
+            "uid": st.st_uid,
+            "gid": st.st_gid,
+        }
+    except OSError:
+        return {"error": "STAT_ERROR"}
 
 def get_low_level_system_state() -> dict:
     system_data = {}
@@ -33,6 +55,12 @@ def get_low_level_system_state() -> dict:
     system_data["os_release"] = uname.release
     system_data["os_version"] = uname.version
     system_data["machine"] = uname.machine
+    system_data["total_memory_bytes"] = psutil.virtual_memory().total
+    system_data["total_swap_bytes"] = psutil.swap_memory().total
+    system_data["file_permissions"] = {
+        f: get_file_permissions(f) for f in critical_files if os.path.exists(f)
+    }
+    system_data["temp_directory"] = tempfile.gettempdir()
 
     # 2. Capture MAC addresses
     interfaces = {}
@@ -45,7 +73,7 @@ def get_low_level_system_state() -> dict:
     system_data["network_interfaces"] = interfaces
 
     # 3. Hash configuration files
-    critical_files = ["/etc/passwd", "/etc/resolv.conf", "/etc/hosts", "/etc/hostname"]
+    
     file_hashes = {}
     for filepath in critical_files:
         if os.path.exists(filepath):
