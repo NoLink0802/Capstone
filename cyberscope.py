@@ -28,6 +28,7 @@ def get_low_level_system_state() -> dict:
 
     # 1.    Capture base OS & Kernel architecture
     uname = platform.uname()
+    system_data["hostname"] = uname.node
     system_data["os_system"] = uname.system
     system_data["os_release"] = uname.release
     system_data["os_version"] = uname.version
@@ -44,7 +45,7 @@ def get_low_level_system_state() -> dict:
     system_data["network_interfaces"] = interfaces
 
     # 3. Hash configuration files
-    critical_files = ["/etc/passwd", "/etc/resolv.conf", "/etc/hosts"]
+    critical_files = ["/etc/passwd", "/etc/resolv.conf", "/etc/hosts", "/etc/hostname"]
     file_hashes = {}
     for filepath in critical_files:
         if os.path.exists(filepath):
@@ -79,7 +80,7 @@ def read_temperature_sensor() -> str:
             time.sleep(0.5)
         except Exception:
             break
-    return "2000°C"  # Fallback temp if sensor not working
+    return None  # Fallback temp if sensor not working, CHanged to NONE to indicate failure to read
 
 
 def emit_payload(trigger_reason: str):
