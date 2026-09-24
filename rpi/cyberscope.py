@@ -27,7 +27,7 @@ contract = w3.eth.contract(
     address=Web3.to_checksum_address(CONTRACT_ADDRESS), abi=CONTRACT_ABI
 )
 
-CHECK_INTERVAL_SECONDS = 10 # Routine check timer
+CHECK_INTERVAL_SECONDS = 3 # Routine check timer
 
 # Light sensor, pin 7, gpio 4, bouncetime .3 is debounce so it doesnt spam the logs
 light_sensor = DigitalInputDevice(4, pull_up=True, bounce_time=0.3)

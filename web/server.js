@@ -73,6 +73,7 @@ async function updateDeviceData() {
 
       newDevices[deviceAddress] = {
         address: deviceAddress,
+        data: null,
         baselineHash: baselineHash,
         verified: null, // Will be updated from integrity checks
         lastCheckTime: null
@@ -85,9 +86,11 @@ async function updateDeviceData() {
     for (const event of integrityEvents) {
       const deviceAddress = event.args.device;
       const matched = event.args.matched;
+      const deviceData = event.args.deviceData;
 
       if (deviceAddress && newDevices[deviceAddress]) {
         newDevices[deviceAddress].verified = matched;
+        newDevices[deviceAddress].data = deviceData;
         
         // Fetch actual block timestamp
         const timestamp = await getBlockTimestamp(event.blockNumber);
