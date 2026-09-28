@@ -16,7 +16,7 @@ app.use(express.json());
 const CONTRACT_ADDRESS = "0x2a362E8346FEAF0A7D5923fb0792aE11367b1080";
 const RPC_URL = "HTTP://10.42.0.1:7545";
 const ARTIFACT_PATH = path.join(__dirname, "../build/contracts/DeviceIntegrityRegistry.json");
-const CACHE_DURATION = 10000; // 10 seconds in milliseconds
+const CACHE_DURATION = 5000; // 5 seconds in milliseconds
 const sentAlerts = new Set(); // Track (deviceAddress, timestamp) pairs
 
 // State
@@ -69,17 +69,9 @@ async function sendSecurityEmail(device) {
       text: `Device Integrity Alert\n\nDevice: ${device.address}\nData: ${device.data}\nSecure Status: ${device.verified}`,
     };
 
-    return new Promise((resolve, reject) => {
-      emailTransport.sendMail(mailOpt, (error, info) => {
-        if (error) {
-          console.error("Email send failed:", error);
-          reject(error);
-        } else {
-          console.log("Message sent:", info.messageId);
-          resolve(info);
-        }
-      });
-    });
+    const info = await emailTransport.sendMail(mailOpt);
+    console.log("Message sent:", info.messageId);
+    return info;
   } catch (error) {
     console.error("Error with sending email:", error);
     throw error;
@@ -159,7 +151,9 @@ async function updateDeviceData() {
 
           if (!sentAlerts.has(alertKey)) {
             console.log(`Security incident detected, sending email for: ${deviceAddress}-${event.blockNumber}`);
-            await sendSecurityEmail(newDevices[deviceAddress]);
+            sendSecurityEmail(newDevices[deviceAddress]).catch(err =>
+              consol.error("background email failed:", err)
+            );
             sentAlerts.add(alertKey);
           }
         }
