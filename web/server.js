@@ -1,8 +1,10 @@
+require('dotenv').config();
 const express = require("express");
 const { ethers } = require("ethers");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
+const nodemailer = require("nodemailer");
 
 const app = express();
 const PORT = 3000;
@@ -15,14 +17,36 @@ const CONTRACT_ADDRESS = "0x2a362E8346FEAF0A7D5923fb0792aE11367b1080";
 const RPC_URL = "HTTP://10.42.0.1:7545";
 const ARTIFACT_PATH = path.join(__dirname, "../build/contracts/DeviceIntegrityRegistry.json");
 const CACHE_DURATION = 10000; // 10 seconds in milliseconds
+const sentAlerts = new Set(); // Track (deviceAddress, timestamp) pairs
 
 // State
 let devicesCache = {};
 let lastUpdateTime = 0;
 let provider;
 let contract;
+let emailTransport
 
-// Initialize provider and contract
+// Initialise email
+function initializeEmail() {
+  emailTransport = nodemailer.createTransport({
+    host: "sandbox.smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+      user: process.env.MAILTRAP_USER,
+      pass: process.env.MAILTRAP_PASS
+    }
+  });
+
+  emailTransport.verify((error, success) => {
+    if (error) {
+      console.log("Email transport error:", error);
+    } else {
+      console.log("Email transport ready");
+    }
+  });
+}
+
+// Initialise provider and contract
 async function initializeContract() {
   try {
     provider = new ethers.JsonRpcProvider(RPC_URL);
@@ -32,6 +56,33 @@ async function initializeContract() {
   } catch (error) {
     console.error("Error initializing contract:", error);
     process.exit(1);
+  }
+}
+
+// Send alert email
+async function sendSecurityEmail(device) {
+  try {
+    const mailOpt = {
+      from: "Device Alerts <alerts@server.com>",
+      to: "Admin <admin@example.com>",
+      subject: "DEVICE ALERT: Device Integrity Check Failed",
+      text: `Device Integrity Alert\n\nDevice: ${device.address}\nData: ${device.data}\nSecure Status: ${device.verified}`,
+    };
+
+    return new Promise((resolve, reject) => {
+      emailTransport.sendMail(mailOpt, (error, info) => {
+        if (error) {
+          console.error("Email send failed:", error);
+          reject(error);
+        } else {
+          console.log("Message sent:", info.messageId);
+          resolve(info);
+        }
+      });
+    });
+  } catch (error) {
+    console.error("Error with sending email:", error);
+    throw error;
   }
 }
 
@@ -50,19 +101,19 @@ async function getBlockTimestamp(blockNumber) {
 async function updateDeviceData() {
   try {
     const now = Date.now();
-    
+
     // Only update if cache is stale
     if (now - lastUpdateTime < CACHE_DURATION) {
       return devicesCache;
     }
 
     console.log("Fetching device data from blockchain...");
-    
+
     const newDevices = {};
 
     // Get all DeviceRegistered events (all devices ever registered)
     const deviceEvents = await contract.queryFilter("DeviceRegistered");
-    
+
     // Get all IntegrityCheck events
     const integrityEvents = await contract.queryFilter("IntegrityCheck");
 
@@ -83,15 +134,36 @@ async function updateDeviceData() {
     // Sort integrity events by block number (oldest first) to get latest check per device
     integrityEvents.sort((a, b) => a.blockNumber - b.blockNumber);
 
+    const latestEventPerDevice = {};
     for (const event of integrityEvents) {
       const deviceAddress = event.args.device;
+      latestEventPerDevice[deviceAddress] = event; // Keep overwriting with latest
+    }
+
+    // process only the latest event per device
+    for (const deviceAddress in latestEventPerDevice) {
+      const event = latestEventPerDevice[deviceAddress];
       const matched = event.args.matched;
       const deviceData = event.args.deviceData;
 
-      if (deviceAddress && newDevices[deviceAddress]) {
+      if (newDevices[deviceAddress]) {
+        const previousState = devicesCache[deviceAddress]?.verified; // Compare to CACHED state
+        const currentState = matched;
+
         newDevices[deviceAddress].verified = matched;
         newDevices[deviceAddress].data = deviceData;
-        
+
+        // detect change
+        if (previousState === true && currentState === false) {
+          const alertKey = `${deviceAddress}-${event.blockNumber}`;
+
+          if (!sentAlerts.has(alertKey)) {
+            console.log(`Security incident detected, sending email for: ${deviceAddress}-${event.blockNumber}`);
+            await sendSecurityEmail(newDevices[deviceAddress]);
+            sentAlerts.add(alertKey);
+          }
+        }
+
         // Fetch actual block timestamp
         const timestamp = await getBlockTimestamp(event.blockNumber);
         newDevices[deviceAddress].lastCheckTime = timestamp;
@@ -127,6 +199,7 @@ app.get("/health", (req, res) => {
 });
 
 // Start server
+initializeEmail();
 initializeContract().then(() => {
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

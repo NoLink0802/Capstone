@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 w3 = Web3(Web3.HTTPProvider("http://10.42.0.1:7545"))
-account = Account.from_key(os.getenv("PRIVATE_KEY"))
+account = Account.from_key(os.getenv("0x537354dc84b00fa76b3aff660207f35b39be7daa38071e626e266859304e7c9d")) # local so can just hardcode
 
 with open("./DeviceIntegrityRegistry.json") as f:
     artifact = json.load(f)
