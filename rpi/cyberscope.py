@@ -11,6 +11,8 @@ from gpiozero import DigitalInputDevice
 from web3 import Web3
 from eth_account import Account
 from dotenv import load_dotenv
+import stat
+import tempfile
 
 # Configuration
 load_dotenv()
@@ -36,6 +38,26 @@ dht_device = adafruit_dht.DHT11(board.D24)
 # tamper flag, once set to true, cannot be changed
 chassis_tampered = False
 
+critical_files = ["/etc/passwd",
+    "/etc/resolv.conf", 
+    "/etc/hosts", 
+    "/etc/hostname", 
+    "/etc/security/access.conf", 
+    "/etc/networks"
+    ]
+
+#File Permissions for critical files
+def get_file_permissions(filepath: str) -> dict:
+    try:
+        st = os.stat(filepath)
+        return {
+            "mode": stat.filemode(st.st_mode),   # e.g. '-rw-r--r--'
+            "octal": oct(st.st_mode & 0o7777),   # e.g. '0o644'
+            "uid": st.st_uid,
+            "gid": st.st_gid,
+        }
+    except OSError:
+        return {"error": "STAT_ERROR"}
 
 def get_low_level_system_state() -> dict:
     system_data = {}
@@ -46,7 +68,12 @@ def get_low_level_system_state() -> dict:
     system_data["os_release"] = uname.release
     system_data["os_version"] = uname.version
     system_data["machine"] = uname.machine
-
+    system_data["total_memory_bytes"] = psutil.virtual_memory().total
+    system_data["total_swap_bytes"] = psutil.swap_memory().total
+    system_data["file_permissions"] = {
+        f: get_file_permissions(f) for f in critical_files if os.path.exists(f)
+    }
+    
     # MAC addresses
     interfaces = {}
     for iface_name, addrs in psutil.net_if_addrs().items():
@@ -59,7 +86,7 @@ def get_low_level_system_state() -> dict:
     system_data["network_interfaces"] = interfaces
 
     # Hash configuration files
-    critical_files = ["/etc/passwd", "/etc/resolv.conf", "/etc/hosts"]
+    
     file_hashes = {}
     for filepath in critical_files:
         if os.path.exists(filepath):
