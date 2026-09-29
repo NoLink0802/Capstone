@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CyberScope Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>CyberScope</h1>
+        <p>IoT Device Integrity Monitoring Dashboard</p>
+    </header>
+
+    <div class="container">
+
+        <div id="devicesContainer">
+            <!-- Device cards will be dynamically inserted here -->
+        </div>
+
+    </div>
+
+    <footer>
+        CyberScope Security Monitoring Prototype
+    </footer>
+
+    <script>
+
+        // Fetch all devices from the blockchain API
+        async function fetchAllDevices() {
+
+            try {
+
+                const response =
+                    await fetch("http://localhost:3000/api/devices");
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Failed to retrieve device data"
+                    );
+
+                }
+
+                const devices =
+                    await response.json();
+
+                renderDeviceCards(devices);
+
+                console.log(
+                    "All devices retrieved successfully:",
+                    devices
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Error retrieving devices:",
+                    error
+                );
+
+                document.getElementById("devicesContainer").innerHTML =
+                    "<p style='color: red;'>Unable to retrieve device data from the Node.js API.</p>";
+
+            }
+
+        }
+
+        // Render device cards dynamically
+        function renderDeviceCards(devices) {
+
+            const container =
+                document.getElementById("devicesContainer");
+
+            container.innerHTML = "";
+
+            if (!devices || Object.keys(devices).length === 0) {
+
+                container.innerHTML =
+                    "<p>No devices found on the blockchain.</p>";
+
+                return;
+
+            }
+
+            Object.values(devices).forEach((device, index) => {
+
+                const card = createDeviceCard(device, index);
+
+                container.appendChild(card);
+
+            });
+
+        }
+
+        // Create a single device card element
+        function createDeviceCard(device, index) {
+
+            const card = document.createElement("div");
+
+            card.className = "device-card";
+
+            const integrityClass =
+                device.verified === true ? "secure" :
+                device.verified === false ? "warning" :
+                "unknown";
+
+            const integrityText =
+                device.verified === true ? "Baseline Match" :
+                device.verified === false ? "Baseline Mismatch" :
+                "Never";
+
+            card.innerHTML = `
+
+                <h2>Device ${index + 1}</h2>
+
+                <div class="info">
+
+                    <div class="info-box">
+                        <strong>Device Address</strong>
+                        <span class="address">${device.address}</span>
+                    </div>
+
+                    <div class="info-box">
+                        <strong>Integrity Status</strong>
+                        <span class="integrity ${integrityClass}">${integrityText}</span>
+                    </div>
+
+                    <div class="info-box">
+                        <strong>Last Check</strong>
+                        <span class="lastCheck">${device.lastCheckTime || "No checks yet"}</span>
+                    </div>
+
+                    <div class="info-box">
+                        <strong>Baseline Hash</strong>
+                        <span class="hash">${device.baselineHash || "Not registered"}</span>
+                    </div>
+
+                    <div class="info-box">
+                        <strong>Device Data</strong>
+                        <span class="data">${device.data || "No data"}</span>
+                    </div>
+
+                </div>
+
+                <div class="alert ${integrityClass}">
+
+                    <strong>Security Alert:</strong>
+
+                    <span>
+                        ${
+                            device.verified === true ?
+                            "System Secure - No integrity changes detected." :
+                            device.verified === false ?
+                            "Security Alert - Integrity mismatch detected. Further investigation recommended." :
+                            "Device integrity status pending or unknown."
+                        }
+                    </span>
+
+                </div>
+
+            `;
+
+            return card;
+
+        }
+
+        // Auto-refresh devices every 10 seconds
+        function startAutoRefresh() {
+
+            fetchAllDevices();
+
+            setInterval(fetchAllDevices, 10000);
+
+        }
+
+        // Load devices on page load
+        startAutoRefresh();
+
+    </script>
+
+</body>
+
+</html>
+
