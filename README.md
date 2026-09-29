@@ -12,7 +12,7 @@ digital obvious endorse wave rain icon swamp amateur other broom bid happy
 truffle migrate --reset --network development
 ```
 4. ``./rpi`` includes the files for the Raspberry Pi
-  - if needed change private key in ``rpi/cyberscope.py``
+  - if needed change private key
   - if needed change contract address to deployed address
   - copy over required files to the Raspberry Pi
 ```bash
@@ -20,7 +20,8 @@ scp ./build/contracts/DeviceIntegrityRegistry.json ./rpi/cyberscope.py capstone@
 ```
 5. if needed change contract address and run node js server
 ```bash
-node web/server.js
+cd web
+node server.js
 ```
 6. dashboard at ``./web/index.html``
 
