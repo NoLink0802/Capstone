@@ -10,13 +10,10 @@ import adafruit_dht
 from gpiozero import DigitalInputDevice
 from web3 import Web3
 from eth_account import Account
-from dotenv import load_dotenv
 import stat
 import tempfile
 
 # Configuration
-load_dotenv()
-
 w3 = Web3(Web3.HTTPProvider("http://10.42.0.1:7545"))
 account = Account.from_key("0x537354dc84b00fa76b3aff660207f35b39be7daa38071e626e266859304e7c9d") # local so can just hardcode
 
@@ -24,7 +21,7 @@ with open("./DeviceIntegrityRegistry.json") as f:
     artifact = json.load(f)
     CONTRACT_ABI = artifact["abi"]
 
-CONTRACT_ADDRESS = "0x2a362E8346FEAF0A7D5923fb0792aE11367b1080"
+CONTRACT_ADDRESS = "0x45e171daf44a6dd648a6b7cbf491ca7de4e5360d"
 contract = w3.eth.contract(
     address=Web3.to_checksum_address(CONTRACT_ADDRESS), abi=CONTRACT_ABI
 )
