@@ -65,7 +65,7 @@ async function sendSecurityEmail(device) {
     const mailOpt = {
       from: "Device Alerts <alerts@server.com>",
       to: "Admin <admin@example.com>",
-      subject: "DEVICE ALERT: Device Integrity Check Failed",
+      subject: "⚠️⚠️DEVICE ALERT⚠️⚠️: Device Integrity Check Failed!!",
       text: `Device Integrity Alert\n\nDevice: ${device.address}\nData: ${device.data}\nSecure Status: ${device.verified}`,
     };
 
