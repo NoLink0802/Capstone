@@ -52,9 +52,9 @@ async function initializeContract() {
     provider = new ethers.JsonRpcProvider(RPC_URL);
     const artifact = JSON.parse(fs.readFileSync(ARTIFACT_PATH, "utf-8"));
     contract = new ethers.Contract(CONTRACT_ADDRESS, artifact.abi, provider);
-    console.log("Contract initialized successfully");
+    console.log("Contract initialised successfully");
   } catch (error) {
-    console.error("Error initializing contract:", error);
+    console.error("Error initialising contract:", error);
     process.exit(1);
   }
 }
