@@ -152,7 +152,7 @@ async function updateDeviceData() {
           if (!sentAlerts.has(alertKey)) {
             console.log(`Security incident detected, sending email for: ${deviceAddress}-${event.blockNumber}`);
             sendSecurityEmail(newDevices[deviceAddress]).catch(err =>
-              consol.error("background email failed:", err)
+              console.error("background email failed:", err)
             );
             sentAlerts.add(alertKey);
           }
