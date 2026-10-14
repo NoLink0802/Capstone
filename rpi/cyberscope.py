@@ -210,7 +210,7 @@ def read_temperature_sensor() -> str:
             if temp is not None:
                 return f"Temperature: {temp}°C | Humidity: {humidity}%"
         except RuntimeError:
-            time.sleep(0.5)
+            time.sleep(1.5)
         except Exception:
             break
     return "Temperature sensor error"
