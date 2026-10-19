@@ -14,9 +14,6 @@ import board
 import adafruit_dht
 from web3 import Web3
 from eth_account import Account
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Configuration
 RPC_URL = os.getenv("RPC_URL", "http://10.42.0.1:7545")
