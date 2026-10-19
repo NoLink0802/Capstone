@@ -4,13 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>CyberScope Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-
     <header>
         <h1>CyberScope</h1>
         <p>IoT Device Integrity Monitoring Dashboard</p>
@@ -21,7 +19,6 @@
         <div id="devicesContainer">
             <!-- Device cards will be dynamically inserted here -->
         </div>
-
     </div>
 
     <footer>
@@ -30,8 +27,8 @@
 
     <script>
 
-        // Fetch all devices from the blockchain API
-        async function fetchAllDevices() {
+       // Fetch all devices from the blockchain API
+       async function fetchAllDevices() {
 
             try {
 
@@ -72,6 +69,7 @@
 
         }
 
+
         // Render device cards dynamically
         function renderDeviceCards(devices) {
 
@@ -104,34 +102,29 @@
 
             const card = document.createElement("div");
 
-            card.className = "device-card";
+		const integrityClass =
+                	device.verified === true ? "secure" :
+                	device.verified === false ? "warning" :
+                	"unknown";
 
-            const integrityClass =
-                device.verified === true ? "secure" :
-                device.verified === false ? "warning" :
-                "unknown";
+            card.className = "device-card " + integrityClass;
 
             const integrityText =
                 device.verified === true ? "Baseline Match" :
                 device.verified === false ? "Baseline Mismatch" :
-                "Never";
+                "Unknown";
 
             card.innerHTML = `
 
-                <h2>Device ${index + 1}</h2>
+                <div class="device-head">
+                    <div>
+			<h2>Device ${index + 1}</h2>
+                        <span class="address">${device.address}</span>
+                    </div>                
+                    <span class="integrity ${integrityClass}">${integrityText}</span>
+		</div>
 
                 <div class="info">
-
-                    <div class="info-box">
-                        <strong>Device Address</strong>
-                        <span class="address">${device.address}</span>
-                    </div>
-
-                    <div class="info-box">
-                        <strong>Integrity Status</strong>
-                        <span class="integrity ${integrityClass}">${integrityText}</span>
-                    </div>
-
                     <div class="info-box">
                         <strong>Last Check</strong>
                         <span class="lastCheck">${device.lastCheckTime || "No checks yet"}</span>
@@ -140,13 +133,12 @@
                     <div class="info-box">
                         <strong>Baseline Hash</strong>
                         <span class="hash">${device.baselineHash || "Not registered"}</span>
-                    </div>
+		    </div>
+                </div>
 
-                    <div class="info-box">
-                        <strong>Device Data</strong>
-                        <span class="data">${device.data || "No data"}</span>
-                    </div>
-
+                <div class="info-box">
+                    <strong>Device Data</strong>
+                    <span class="data">${device.data || "No data"}</span>
                 </div>
 
                 <div class="alert ${integrityClass}">
